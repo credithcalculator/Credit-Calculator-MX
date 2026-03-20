@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(145deg, #0a3a2a 0%, #1a5a3a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 48px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 50px -8px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #1a5a3a;
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    
+    .subtitulo {
+      text-align: center;
+      color: #4a7a5a;
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+    
+    /* Burbujas de selección */
+    .burbujas {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    
+    .burbuja {
+      background: linear-gradient(145deg, #f8fff8, #e8f5e8);
+      border-radius: 30px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 12px rgba(0,40,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .burbuja:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,60,0,0.2);
+    }
+    
+    .burbuja.producer { border-left: 8px solid #2e7d32; }
+    .burbuja.lider { border-left: 8px solid #1565c0; }
+    .burbuja.sede { border-left: 8px solid #7b1fa2; }
+    
+    .burbuja.seleccionada {
+      border: 3px solid;
+      transform: scale(1.02);
+    }
+    
+    .burbuja.seleccionada.producer { border-color: #2e7d32; background: #f0fff0; }
+    .burbuja.seleccionada.lider { border-color: #1565c0; background: #f0f5ff; }
+    .burbuja.seleccionada.sede { border-color: #7b1fa2; background: #faf0ff; }
+    
+    .burbuja-icono {
+      font-size: 2.5rem;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border-radius: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .burbuja-info {
+      flex: 1;
+    }
+    
+    .burbuja-titulo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .burbuja-desc {
+      font-size: 0.85rem;
+      color: #5a7a6a;
+    }
+    
+    .burbuja.producer .burbuja-titulo { color: #2e7d32; }
+    .burbuja.lider .burbuja-titulo { color: #1565c0; }
+    .burbuja.sede .burbuja-titulo { color: #7b1fa2; }
+    
+    /* Panel de acceso */
+    .panel-acceso {
+      background: #f8fff8;
+      border-radius: 30px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 2px solid #e0f0e0;
+    }
+    
+    .panel-acceso h3 {
+      color: #1a4a2a;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+    }
+    
+    .input-clave {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid #c0e0c0;
+      border-radius: 60px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    
+    .input-clave:focus {
+      border-color: #1a5a3a;
+    }
+    
+    .btn-validar {
+      width: 100%;
+      padding: 14px;
+      background: #1a5a3a;
+      color: white;
+      border: none;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    
+    .btn-validar:hover {
+      background: #0a3a2a;
+    }
+    
+    .btn-validar:disabled {
+      background: #a0c0a0;
+      cursor: not-allowed;
+    }
+    
+    /* Área de consumo y cálculo */
+    .calculadora-area {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 2px dashed #c0e0c0;
+    }
+    
+    .consumo-input {
+      background: #f0f8f0;
+      border-radius: 60px;
+      padding: 8px 20px;
+      margin-bottom: 20px;
+      border: 2px solid #c0e0c0;
+    }
+    
+    .consumo-input label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #1a5a3a;
+      text-transform: uppercase;
+    }
+    
+    .consumo-input input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0a3a20;
+      outline: none;
+      padding: 4px 0;
+    }
+    
+    .btn-calcular {
+      width: 100%;
+      padding: 16px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    
+    .comision {
+      background: #f8fff8;
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #d0e8d0;
+      border-left-width: 6px;
+      border-left-style: solid;
+    }
+    
+    .comision.producer { border-left-color: #2e7d32; }
+    .comision.lider { border-left-color: #1565c0; }
+    .comision.sede { border-left-color: #7b1fa2; }
+    
+    .comision-info h4 {
+      font-size: 1.1rem;
+      color: #1d3a2a;
+      margin-bottom: 4px;
+    }
+    
+    .comision-info p {
+      font-size: 0.7rem;
+      color: #5a7a6a;
+    }
+    
+    .comision-monto {
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #1a5a3a;
+    }
+    
+    .error {
+      color: #b91c1c;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      text-align: center;
+    }
+    
+    .oculto {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚡ Fino Services</h1>
+    <div class="subtitulo">Selecciona tu perfil</div>
+    
+    <!-- Burbujas de selección -->
+    <div class="burbujas">
+      <div class="burbuja producer" id="burbujaProducer" onclick="seleccionarRol('producer')">
+        <div class="burbuja-icono">👤</div>
+        <div class="burbuja-info">
+          <div class="burbuja-titulo">Producer</div>
+          <div class="burbuja-desc">Acceso sin clave</div>
+        </div>
+      </div>
+      
+      <div class="burbuja lider" id="burbujaLider" onclick="seleccionarRol('lider')">
+        <div class="burbuja-icono">🤝</div>
+        <div class="burbuja-info">
+          <div class="burbuja-titulo">Líder / Coordinador</div>
+          <div class="burbuja-desc">Requiere clave</div>
+        </div>
+      </div>
+      
+      <div class="burbuja sede" id="burbujaSede" onclick="seleccionarRol('sede')">
+        <div class="burbuja-icono">🏢</div>
+        <div class="burbuja-info">
+          <div class="burbuja-titulo">Líder de sede</div>
+          <div class="burbuja-desc">Requiere clave</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Panel de acceso (solo para Líder y Sede) -->
+    <div class="panel-acceso oculto" id="panelAcceso">
+      <h3 id="tituloAcceso">🤝 Acceso Líder/Coordinador</h3>
+      <input type="password" class="input-clave" id="clave" placeholder="Ingresa tu clave" autocomplete="off">
+      <button class="btn-validar" id="btnValidar" onclick="validarAcceso()">🔓 Validar acceso</button>
+      <div class="error oculto" id="errorClave">❌ Clave incorrecta</div>
+    </div>
+    
+    <!-- Área de calculadora (visible cuando hay acceso) -->
+    <div class="calculadora-area oculto" id="calculadoraArea">
+      <div class="consumo-input">
+        <label>💰 CONSUMO USD</label>
+        <input type="number" id="consumo" value="2500" step="100">
+      </div>
+      
+      <button class="btn-calcular" onclick="calcular()">🧮 Calcular comisiones</button>
+      
+      <div id="comisiones"></div>
+    </div>
+  </div>
+  
+  <script>
+    let rolSeleccionado = null;
+    let accesoValido = false;
+    
+    function seleccionarRol(rol) {
+      rolSeleccionado = rol;
+      accesoValido = (rol === 'producer'); // Producer tiene acceso automático
+      
+      // Quitar selección de todas las burbujas
+      document.getElementById('burbujaProducer').classList.remove('seleccionada');
+      document.getElementById('burbujaLider').classList.remove('seleccionada');
+      document.getElementById('burbujaSede').classList.remove('seleccionada');
+      
+      // Marcar la burbuja seleccionada
+      document.getElementById('burbuja' + rol.charAt(0).toUpperCase() + rol.slice(1)).classList.add('seleccionada');
+      
+      const panelAcceso = document.getElementById('panelAcceso');
+      const calculadoraArea = document.getElementById('calculadoraArea');
+      
+      if (rol === 'producer') {
+        // Producer: ocultar panel de acceso, mostrar calculadora
+        panelAcceso.classList.add('oculto');
+        calculadoraArea.classList.remove('oculto');
+        document.getElementById('comisiones').innerHTML = ''; // Limpiar comisiones anteriores
+      } else {
+        // Líder o Sede: mostrar panel de acceso, ocultar calculadora
+        panelAcceso.classList.remove('oculto');
+        calculadoraArea.classList.add('oculto');
+        
+        // Actualizar título del panel
+        const titulo = rol === 'lider' ? '🤝 Acceso Líder/Coordinador' : '🏢 Acceso Líder de sede';
+        document.getElementById('tituloAcceso').innerHTML = titulo;
+        
+        // Limpiar campos
+        document.getElementById('clave').value = '';
+        document.getElementById('errorClave').classList.add('oculto');
+        document.getElementById('btnValidar').disabled = false;
+        document.getElementById('btnValidar').innerHTML = '🔓 Validar acceso';
+      }
+    }
+    
+    function validarAcceso() {
+      const clave = document.getElementById('clave').value;
+      
+      google.script.run
+        .withSuccessHandler(function(valido) {
+          if (valido) {
+            accesoValido = true;
+            document.getElementById('errorClave').classList.add('oculto');
+            document.getElementById('btnValidar').disabled = true;
+            document.getElementById('btnValidar').innerHTML = '✅ Acceso concedido';
+            
+            // Mostrar calculadora
+            document.getElementById('calculadoraArea').classList.remove('oculto');
+            document.getElementById('comisiones').innerHTML = ''; // Limpiar comisiones anteriores
+          } else {
+            document.getElementById('errorClave').classList.remove('oculto');
+          }
+        })
+        .VALIDAR_CLAVE(rolSeleccionado, clave);
+    }
+    
+    function calcular() {
+      if (!accesoValido) return;
+      
+      const consumo = document.getElementById('consumo').value;
+      
+      google.script.run
+        .withSuccessHandler(function(data) {
+          const formatoMXN = (val) => {
+            return '$' + val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+          };
+          
+          let html = '';
+          
+          // Producer siempre visible
+          html += `
+            <div class="comision producer">
+              <div class="comision-info">
+                <h4>👤 Producer</h4>
+                <p>Comisión principal</p>
+              </div>
+              <div class="comision-monto">${formatoMXN(data.producer)}</div>
+            </div>
+          `;
+          
+          // Líder visible para Líder y Sede
+          if (rolSeleccionado === 'lider' || rolSeleccionado === 'sede') {
+            html += `
+              <div class="comision lider">
+                <div class="comision-info">
+                  <h4>🤝 Líder / Coordinador</h4>
+                  <p>50% del Producer</p>
+                </div>
+                <div class="comision-monto">${formatoMXN(data.lider)}</div>
+              </div>
+            `;
+          }
+          
+          // Sede visible solo para Sede
+          if (rolSeleccionado === 'sede') {
+            html += `
+              <div class="comision sede">
+                <div class="comision-info">
+                  <h4>🏢 Líder de sede</h4>
+                  <p>25% del Producer</p>
+                </div>
+                <div class="comision-monto">${formatoMXN(data.sede)}</div>
+              </div>
+            `;
+          }
+          
+          document.getElementById('comisiones').innerHTML = html;
+        })
+        .CALCULAR_COMISIONES(consumo);
+    }
+  </script>
+</body>
+</html>
