@@ -3,6 +3,7 @@
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fino Services - Calculadora de Comisiones</title>
   <style>
     * {
       margin: 0;
@@ -153,6 +154,7 @@
       font-weight: 600;
       font-size: 1rem;
       cursor: pointer;
+      transition: all 0.3s;
     }
     
     .btn-validar:hover {
@@ -209,6 +211,13 @@
       font-size: 1.1rem;
       cursor: pointer;
       margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    
+    .btn-calcular:hover {
+      background: #1b5e20;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
     .comision {
@@ -222,6 +231,11 @@
       border: 1px solid #d0e8d0;
       border-left-width: 6px;
       border-left-style: solid;
+      transition: all 0.3s;
+    }
+    
+    .comision:hover {
+      transform: translateX(4px);
     }
     
     .comision.producer { border-left-color: #2e7d32; }
@@ -255,6 +269,47 @@
     .oculto {
       display: none;
     }
+    
+    /* Animaciones */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .comision {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      .card {
+        padding: 24px 20px;
+      }
+      
+      .comision-monto {
+        font-size: 1.3rem;
+      }
+      
+      .burbuja {
+        padding: 18px;
+      }
+      
+      .burbuja-icono {
+        width: 50px;
+        height: 50px;
+        font-size: 2rem;
+      }
+      
+      .burbuja-titulo {
+        font-size: 1.1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -264,7 +319,7 @@
     
     <!-- Burbujas de selección -->
     <div class="burbujas">
-      <div class="burbuja producer" id="burbujaProducer" onclick="seleccionarRol('producer')">
+      <div class="burbuja producer" id="burbujaProducer" onclick="app.seleccionarRol('producer')">
         <div class="burbuja-icono">👤</div>
         <div class="burbuja-info">
           <div class="burbuja-titulo">Producer</div>
@@ -272,7 +327,7 @@
         </div>
       </div>
       
-      <div class="burbuja lider" id="burbujaLider" onclick="seleccionarRol('lider')">
+      <div class="burbuja lider" id="burbujaLider" onclick="app.seleccionarRol('lider')">
         <div class="burbuja-icono">🤝</div>
         <div class="burbuja-info">
           <div class="burbuja-titulo">Líder / Coordinador</div>
@@ -280,7 +335,7 @@
         </div>
       </div>
       
-      <div class="burbuja sede" id="burbujaSede" onclick="seleccionarRol('sede')">
+      <div class="burbuja sede" id="burbujaSede" onclick="app.seleccionarRol('sede')">
         <div class="burbuja-icono">🏢</div>
         <div class="burbuja-info">
           <div class="burbuja-titulo">Líder de sede</div>
@@ -293,7 +348,7 @@
     <div class="panel-acceso oculto" id="panelAcceso">
       <h3 id="tituloAcceso">🤝 Acceso Líder/Coordinador</h3>
       <input type="password" class="input-clave" id="clave" placeholder="Ingresa tu clave" autocomplete="off">
-      <button class="btn-validar" id="btnValidar" onclick="validarAcceso()">🔓 Validar acceso</button>
+      <button class="btn-validar" id="btnValidar" onclick="app.validarAcceso()">🔓 Validar acceso</button>
       <div class="error oculto" id="errorClave">❌ Clave incorrecta</div>
     </div>
     
@@ -304,128 +359,215 @@
         <input type="number" id="consumo" value="2500" step="100">
       </div>
       
-      <button class="btn-calcular" onclick="calcular()">🧮 Calcular comisiones</button>
+      <button class="btn-calcular" onclick="app.calcular()">🧮 Calcular comisiones</button>
       
       <div id="comisiones"></div>
     </div>
   </div>
   
   <script>
+    // ============================================
+    // CÁLCULO DE COMISIONES - VERSIÓN COMPLETA
+    // ============================================
+    
+    const CLAVES = {
+      lider: 'LIDER2024',
+      sede: 'SEDE2024'
+    };
+    
+    function CALCULAR_COMISIONES(consumo) {
+      // Asegurar que consumo es número
+      consumo = Number(consumo);
+      if (isNaN(consumo) || consumo < 0) consumo = 0;
+      
+      // 1. Galones = Consumo / 4
+      const galones = consumo / 4;
+      
+      // 2. Rebates USD = Galones × 0.33
+      const rebatesUSD = galones * 0.33;
+      
+      // 3. Fino Services (después de cliente 30%) = Rebates × 0.70
+      const finoServicesUSD = rebatesUSD * 0.70;
+      
+      // 4. Team Comercial (30% de Fino Services) = Fino Services × 0.30
+      const teamComercialUSD = finoServicesUSD * 0.30;
+      
+      // 5. PRODUCER MXN = (Team Comercial USD / 100) × 222
+      const producerMXN = (teamComercialUSD / 100) * 222;
+      
+      // 6. Líder/Coordinador MXN = Producer / 2
+      const liderMXN = producerMXN / 2;
+      
+      // 7. Líder de sede MXN = Líder / 2
+      const sedeMXN = liderMXN / 2;
+      
+      // Resultados finales
+      return {
+        producer: producerMXN,
+        lider: liderMXN,
+        sede: sedeMXN,
+        // Valores intermedios para debug (opcional)
+        debug: {
+          galones: galones,
+          rebatesUSD: rebatesUSD,
+          finoServicesUSD: finoServicesUSD,
+          teamComercialUSD: teamComercialUSD
+        }
+      };
+    }
+    
+    function VALIDAR_CLAVE(rol, clave) {
+      if (rol === 'producer') return true;
+      return CLAVES[rol] === clave;
+    }
+    
+    // ============================================
+    // APLICACIÓN PRINCIPAL
+    // ============================================
+    
     let rolSeleccionado = null;
     let accesoValido = false;
     
-    function seleccionarRol(rol) {
-      rolSeleccionado = rol;
-      accesoValido = (rol === 'producer'); // Producer tiene acceso automático
-      
-      // Quitar selección de todas las burbujas
-      document.getElementById('burbujaProducer').classList.remove('seleccionada');
-      document.getElementById('burbujaLider').classList.remove('seleccionada');
-      document.getElementById('burbujaSede').classList.remove('seleccionada');
-      
-      // Marcar la burbuja seleccionada
-      document.getElementById('burbuja' + rol.charAt(0).toUpperCase() + rol.slice(1)).classList.add('seleccionada');
-      
-      const panelAcceso = document.getElementById('panelAcceso');
-      const calculadoraArea = document.getElementById('calculadoraArea');
-      
-      if (rol === 'producer') {
-        // Producer: ocultar panel de acceso, mostrar calculadora
-        panelAcceso.classList.add('oculto');
-        calculadoraArea.classList.remove('oculto');
-        document.getElementById('comisiones').innerHTML = ''; // Limpiar comisiones anteriores
-      } else {
-        // Líder o Sede: mostrar panel de acceso, ocultar calculadora
-        panelAcceso.classList.remove('oculto');
-        calculadoraArea.classList.add('oculto');
+    const app = {
+      seleccionarRol: function(rol) {
+        rolSeleccionado = rol;
+        accesoValido = (rol === 'producer');
         
-        // Actualizar título del panel
-        const titulo = rol === 'lider' ? '🤝 Acceso Líder/Coordinador' : '🏢 Acceso Líder de sede';
-        document.getElementById('tituloAcceso').innerHTML = titulo;
+        // Quitar selección de todas las burbujas
+        document.getElementById('burbujaProducer').classList.remove('seleccionada');
+        document.getElementById('burbujaLider').classList.remove('seleccionada');
+        document.getElementById('burbujaSede').classList.remove('seleccionada');
         
-        // Limpiar campos
-        document.getElementById('clave').value = '';
-        document.getElementById('errorClave').classList.add('oculto');
-        document.getElementById('btnValidar').disabled = false;
-        document.getElementById('btnValidar').innerHTML = '🔓 Validar acceso';
-      }
-    }
-    
-    function validarAcceso() {
-      const clave = document.getElementById('clave').value;
-      
-      google.script.run
-        .withSuccessHandler(function(valido) {
-          if (valido) {
-            accesoValido = true;
-            document.getElementById('errorClave').classList.add('oculto');
-            document.getElementById('btnValidar').disabled = true;
-            document.getElementById('btnValidar').innerHTML = '✅ Acceso concedido';
-            
-            // Mostrar calculadora
-            document.getElementById('calculadoraArea').classList.remove('oculto');
-            document.getElementById('comisiones').innerHTML = ''; // Limpiar comisiones anteriores
-          } else {
-            document.getElementById('errorClave').classList.remove('oculto');
-          }
-        })
-        .VALIDAR_CLAVE(rolSeleccionado, clave);
-    }
-    
-    function calcular() {
-      if (!accesoValido) return;
-      
-      const consumo = document.getElementById('consumo').value;
-      
-      google.script.run
-        .withSuccessHandler(function(data) {
-          const formatoMXN = (val) => {
-            return '$' + val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-          };
+        // Marcar la burbuja seleccionada
+        const burbujaId = 'burbuja' + rol.charAt(0).toUpperCase() + rol.slice(1);
+        document.getElementById(burbujaId).classList.add('seleccionada');
+        
+        const panelAcceso = document.getElementById('panelAcceso');
+        const calculadoraArea = document.getElementById('calculadoraArea');
+        
+        if (rol === 'producer') {
+          // Producer: ocultar panel de acceso, mostrar calculadora
+          panelAcceso.classList.add('oculto');
+          calculadoraArea.classList.remove('oculto');
+          document.getElementById('comisiones').innerHTML = '';
+          // Limpiar mensaje de error si existe
+          document.getElementById('errorClave').classList.add('oculto');
+        } else {
+          // Líder o Sede: mostrar panel de acceso, ocultar calculadora
+          panelAcceso.classList.remove('oculto');
+          calculadoraArea.classList.add('oculto');
           
-          let html = '';
+          // Actualizar título del panel
+          const titulo = rol === 'lider' ? '🤝 Acceso Líder/Coordinador' : '🏢 Acceso Líder de sede';
+          document.getElementById('tituloAcceso').innerHTML = titulo;
           
-          // Producer siempre visible
+          // Limpiar campos
+          document.getElementById('clave').value = '';
+          document.getElementById('errorClave').classList.add('oculto');
+          const btnValidar = document.getElementById('btnValidar');
+          btnValidar.disabled = false;
+          btnValidar.innerHTML = '🔓 Validar acceso';
+        }
+      },
+      
+      validarAcceso: function() {
+        const clave = document.getElementById('clave').value;
+        const valido = VALIDAR_CLAVE(rolSeleccionado, clave);
+        
+        if (valido) {
+          accesoValido = true;
+          document.getElementById('errorClave').classList.add('oculto');
+          const btnValidar = document.getElementById('btnValidar');
+          btnValidar.disabled = true;
+          btnValidar.innerHTML = '✅ Acceso concedido';
+          
+          // Mostrar calculadora
+          document.getElementById('calculadoraArea').classList.remove('oculto');
+          document.getElementById('comisiones').innerHTML = '';
+        } else {
+          document.getElementById('errorClave').classList.remove('oculto');
+          // Limpiar campo de clave
+          document.getElementById('clave').value = '';
+          document.getElementById('clave').focus();
+        }
+      },
+      
+      calcular: function() {
+        if (!accesoValido) return;
+        
+        const consumo = document.getElementById('consumo').value;
+        const data = CALCULAR_COMISIONES(consumo);
+        
+        const formatoMXN = (val) => {
+          return '$' + val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        };
+        
+        let html = '';
+        
+        // Producer siempre visible
+        html += `
+          <div class="comision producer">
+            <div class="comision-info">
+              <h4>👤 Producer</h4>
+              <p>Comisión principal</p>
+            </div>
+            <div class="comision-monto">${formatoMXN(data.producer)}</div>
+          </div>
+        `;
+        
+        // Líder visible para Líder y Sede
+        if (rolSeleccionado === 'lider' || rolSeleccionado === 'sede') {
           html += `
-            <div class="comision producer">
+            <div class="comision lider">
               <div class="comision-info">
-                <h4>👤 Producer</h4>
-                <p>Comisión principal</p>
+                <h4>🤝 Líder / Coordinador</h4>
+                <p>50% del Producer</p>
               </div>
-              <div class="comision-monto">${formatoMXN(data.producer)}</div>
+              <div class="comision-monto">${formatoMXN(data.lider)}</div>
             </div>
           `;
-          
-          // Líder visible para Líder y Sede
-          if (rolSeleccionado === 'lider' || rolSeleccionado === 'sede') {
-            html += `
-              <div class="comision lider">
-                <div class="comision-info">
-                  <h4>🤝 Líder / Coordinador</h4>
-                  <p>50% del Producer</p>
-                </div>
-                <div class="comision-monto">${formatoMXN(data.lider)}</div>
+        }
+        
+        // Sede visible solo para Sede
+        if (rolSeleccionado === 'sede') {
+          html += `
+            <div class="comision sede">
+              <div class="comision-info">
+                <h4>🏢 Líder de sede</h4>
+                <p>25% del Producer</p>
               </div>
-            `;
+              <div class="comision-monto">${formatoMXN(data.sede)}</div>
+            </div>
+          `;
+        }
+        
+        document.getElementById('comisiones').innerHTML = html;
+      }
+    };
+    
+    // Inicializar con valor por defecto (Producer)
+    app.seleccionarRol('producer');
+    
+    // Agregar evento Enter para calcular
+    document.addEventListener('DOMContentLoaded', function() {
+      const consumoInput = document.getElementById('consumo');
+      if (consumoInput) {
+        consumoInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            app.calcular();
           }
-          
-          // Sede visible solo para Sede
-          if (rolSeleccionado === 'sede') {
-            html += `
-              <div class="comision sede">
-                <div class="comision-info">
-                  <h4>🏢 Líder de sede</h4>
-                  <p>25% del Producer</p>
-                </div>
-                <div class="comision-monto">${formatoMXN(data.sede)}</div>
-              </div>
-            `;
+        });
+      }
+      
+      const claveInput = document.getElementById('clave');
+      if (claveInput) {
+        claveInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            app.validarAcceso();
           }
-          
-          document.getElementById('comisiones').innerHTML = html;
-        })
-        .CALCULAR_COMISIONES(consumo);
-    }
+        });
+      }
+    });
   </script>
 </body>
 </html>
