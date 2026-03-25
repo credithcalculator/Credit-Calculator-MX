@@ -21,6 +21,112 @@
       padding: 16px;
     }
     
+    /* Pantalla de bloqueo inicial */
+    .lock-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(145deg, #0a3a2a 0%, #1a5a3a 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      transition: all 0.5s ease;
+    }
+    
+    .lock-card {
+      background: white;
+      border-radius: 48px;
+      padding: 48px 32px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 25px 50px -8px rgba(0,0,0,0.3);
+      animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .lock-card h2 {
+      color: #1a5a3a;
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+    
+    .lock-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+    
+    .lock-card p {
+      color: #5a7a6a;
+      margin-bottom: 24px;
+    }
+    
+    .input-clave-maestra {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid #c0e0c0;
+      border-radius: 60px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      outline: none;
+      text-align: center;
+    }
+    
+    .input-clave-maestra:focus {
+      border-color: #1a5a3a;
+    }
+    
+    .btn-desbloquear {
+      width: 100%;
+      padding: 14px;
+      background: #1a5a3a;
+      color: white;
+      border: none;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-desbloquear:hover {
+      background: #0a3a2a;
+      transform: translateY(-2px);
+    }
+    
+    .error-maestra {
+      color: #b91c1c;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      display: none;
+    }
+    
+    /* Contenido principal (oculto inicialmente) */
+    .main-content {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    
+    .main-content.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    
     .card {
       background: white;
       border-radius: 48px;
@@ -313,59 +419,124 @@
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>⚡ Fino Services</h1>
-    <div class="subtitulo">Selecciona tu perfil</div>
-    
-    <!-- Burbujas de selección -->
-    <div class="burbujas">
-      <div class="burbuja producer" id="burbujaProducer" onclick="app.seleccionarRol('producer')">
-        <div class="burbuja-icono">👤</div>
-        <div class="burbuja-info">
-          <div class="burbuja-titulo">Producer</div>
-          <div class="burbuja-desc">Acceso sin clave</div>
-        </div>
-      </div>
-      
-      <div class="burbuja lider" id="burbujaLider" onclick="app.seleccionarRol('lider')">
-        <div class="burbuja-icono">🤝</div>
-        <div class="burbuja-info">
-          <div class="burbuja-titulo">Líder / Coordinador</div>
-          <div class="burbuja-desc">Requiere clave</div>
-        </div>
-      </div>
-      
-      <div class="burbuja sede" id="burbujaSede" onclick="app.seleccionarRol('sede')">
-        <div class="burbuja-icono">🏢</div>
-        <div class="burbuja-info">
-          <div class="burbuja-titulo">Líder de sede</div>
-          <div class="burbuja-desc">Requiere clave</div>
-        </div>
-      </div>
+  <!-- Pantalla de bloqueo inicial -->
+  <div class="lock-screen" id="lockScreen">
+    <div class="lock-card">
+      <div class="lock-icon">🔐</div>
+      <h2>Acceso Restringido</h2>
+      <p>Ingresa la clave maestra para continuar</p>
+      <input type="password" class="input-clave-maestra" id="claveMaestra" placeholder="Clave de acceso" autocomplete="off">
+      <button class="btn-desbloquear" onclick="validarClaveMaestra()">🔓 Desbloquear</button>
+      <div class="error-maestra" id="errorMaestra">❌ Clave incorrecta</div>
     </div>
-    
-    <!-- Panel de acceso (solo para Líder y Sede) -->
-    <div class="panel-acceso oculto" id="panelAcceso">
-      <h3 id="tituloAcceso">🤝 Acceso Líder/Coordinador</h3>
-      <input type="password" class="input-clave" id="clave" placeholder="Ingresa tu clave" autocomplete="off">
-      <button class="btn-validar" id="btnValidar" onclick="app.validarAcceso()">🔓 Validar acceso</button>
-      <div class="error oculto" id="errorClave">❌ Clave incorrecta</div>
-    </div>
-    
-    <!-- Área de calculadora (visible cuando hay acceso) -->
-    <div class="calculadora-area oculto" id="calculadoraArea">
-      <div class="consumo-input">
-        <label>💰 CONSUMO USD</label>
-        <input type="number" id="consumo" value="2500" step="100">
+  </div>
+
+  <!-- Contenido principal (oculto hasta validar clave maestra) -->
+  <div class="main-content" id="mainContent">
+    <div class="card">
+      <h1>⚡ Fino Services</h1>
+      <div class="subtitulo">Selecciona tu perfil</div>
+      
+      <!-- Burbujas de selección -->
+      <div class="burbujas">
+        <div class="burbuja producer" id="burbujaProducer" onclick="app.seleccionarRol('producer')">
+          <div class="burbuja-icono">👤</div>
+          <div class="burbuja-info">
+            <div class="burbuja-titulo">Producer</div>
+            <div class="burbuja-desc">Acceso sin clave</div>
+          </div>
+        </div>
+        
+        <div class="burbuja lider" id="burbujaLider" onclick="app.seleccionarRol('lider')">
+          <div class="burbuja-icono">🤝</div>
+          <div class="burbuja-info">
+            <div class="burbuja-titulo">Líder / Coordinador</div>
+            <div class="burbuja-desc">Requiere clave</div>
+          </div>
+        </div>
+        
+        <div class="burbuja sede" id="burbujaSede" onclick="app.seleccionarRol('sede')">
+          <div class="burbuja-icono">🏢</div>
+          <div class="burbuja-info">
+            <div class="burbuja-titulo">Líder de sede</div>
+            <div class="burbuja-desc">Requiere clave</div>
+          </div>
+        </div>
       </div>
       
-      <button class="btn-calcular" onclick="app.calcular()">🧮 Calcular comisiones</button>
+      <!-- Panel de acceso (solo para Líder y Sede) -->
+      <div class="panel-acceso oculto" id="panelAcceso">
+        <h3 id="tituloAcceso">🤝 Acceso Líder/Coordinador</h3>
+        <input type="password" class="input-clave" id="clave" placeholder="Ingresa tu clave" autocomplete="off">
+        <button class="btn-validar" id="btnValidar" onclick="app.validarAcceso()">🔓 Validar acceso</button>
+        <div class="error oculto" id="errorClave">❌ Clave incorrecta</div>
+      </div>
       
-      <div id="comisiones"></div>
+      <!-- Área de calculadora (visible cuando hay acceso) -->
+      <div class="calculadora-area oculto" id="calculadoraArea">
+        <div class="consumo-input">
+          <label>💰 CONSUMO USD</label>
+          <input type="number" id="consumo" value="2500" step="100">
+        </div>
+        
+        <button class="btn-calcular" onclick="app.calcular()">🧮 Calcular comisiones</button>
+        
+        <div id="comisiones"></div>
+      </div>
     </div>
   </div>
   
   <script>
+    // ============================================
+    // CLAVE MAESTRA PARA ACCESO INICIAL
+    // ============================================
+    const CLAVE_MAESTRA = "FINOS2024"; // Puedes cambiar esta clave
+    
+    function validarClaveMaestra() {
+      const claveIngresada = document.getElementById('claveMaestra').value;
+      const errorElement = document.getElementById('errorMaestra');
+      
+      if (claveIngresada === CLAVE_MAESTRA) {
+        // Clave correcta - ocultar pantalla de bloqueo y mostrar contenido
+        const lockScreen = document.getElementById('lockScreen');
+        const mainContent = document.getElementById('mainContent');
+        
+        lockScreen.style.opacity = '0';
+        setTimeout(() => {
+          lockScreen.style.display = 'none';
+          mainContent.classList.add('visible');
+        }, 500);
+        
+        // Limpiar campo y error
+        document.getElementById('claveMaestra').value = '';
+        errorElement.style.display = 'none';
+      } else {
+        // Clave incorrecta
+        errorElement.style.display = 'block';
+        document.getElementById('claveMaestra').value = '';
+        document.getElementById('claveMaestra').focus();
+        
+        // Animación de error
+        const lockCard = document.querySelector('.lock-card');
+        lockCard.style.animation = 'none';
+        setTimeout(() => {
+          lockCard.style.animation = 'slideUp 0.5s ease';
+        }, 10);
+      }
+    }
+    
+    // Permitir presionar Enter en el campo de clave maestra
+    document.addEventListener('DOMContentLoaded', function() {
+      const claveMaestraInput = document.getElementById('claveMaestra');
+      if (claveMaestraInput) {
+        claveMaestraInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            validarClaveMaestra();
+          }
+        });
+      }
+    });
+    
     // ============================================
     // CÁLCULO DE COMISIONES - VERSIÓN COMPLETA
     // ============================================
@@ -545,8 +716,8 @@
       }
     };
     
-    // Inicializar con valor por defecto (Producer)
-    app.seleccionarRol('producer');
+    // Inicializar con valor por defecto (Producer) - solo después de desbloquear
+    // Pero como el contenido está oculto, esperamos a que se muestre
     
     // Agregar evento Enter para calcular
     document.addEventListener('DOMContentLoaded', function() {
@@ -554,7 +725,9 @@
       if (consumoInput) {
         consumoInput.addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
-            app.calcular();
+            if (app.calcular && accesoValido) {
+              app.calcular();
+            }
           }
         });
       }
@@ -563,11 +736,21 @@
       if (claveInput) {
         claveInput.addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
-            app.validarAcceso();
+            if (app.validarAcceso && rolSeleccionado !== 'producer') {
+              app.validarAcceso();
+            }
           }
         });
       }
     });
+    
+    // Inicializar app cuando el contenido esté visible
+    // Esto se ejecutará cuando se desbloquee la página
+    setTimeout(() => {
+      if (document.getElementById('mainContent').classList.contains('visible')) {
+        app.seleccionarRol('producer');
+      }
+    }, 100);
   </script>
 </body>
 </html>
